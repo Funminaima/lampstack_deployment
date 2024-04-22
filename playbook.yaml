@@ -1,0 +1,29 @@
+- name: Run and execute lamp bash script on slave node
+  hosts: all
+  become: true
+  tasks:
+    - name: Transfer bash script from master to slave
+      copy:
+        src: /home/vagrant/lamp_stack.sh
+        dest: /home/vagrant/lamp_stack.sh
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Execute the bash script on slave node
+      script: /home/vagrant/lamp_stack.sh
+
+    - name: Ensure the log file exists
+      file:
+        path: /var/log/system_uptime.log
+        state: touch
+        mode: "0644"
+        owner: root
+        group: root
+
+    - name: cron job to check uptime
+      cron:
+        name: check uptime
+        minute: "0"        # Run at minute 0 (midnight)
+        hour: "0"          # Run at hour 0 (midnight)
+        job: "/usr/bin/uptime >> /var/log/system_uptime.log"
